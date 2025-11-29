@@ -85,11 +85,11 @@ if st.session_state.get('show_signup', False):
                     st.success(f"✅ Account created! Welcome {new_username}")
                     st.session_state['show_signup'] = False
                     time.sleep(1)
-                    st.rerun()
+       
         with col_s2:
             if st.button("◀️ Back", use_container_width=True):
                 st.session_state['show_signup'] = False
-                st.rerun()
+   
 
 # ============================================================================
 # LOGIN PAGE
@@ -113,7 +113,7 @@ elif not st.session_state['logged_in']:
                     st.session_state['username'] = username
                     st.success(f"✅ Welcome {username}!")
                     time.sleep(0.5)
-                    st.rerun()
+       
                 else:
                     st.error("❌ Invalid credentials")
         with col_l2:
@@ -121,7 +121,7 @@ elif not st.session_state['logged_in']:
                 st.session_state['logged_in'] = True
                 st.session_state['username'] = 'guest'
                 st.session_state['guest_login_time'] = time.time()
-                st.rerun()
+   
         
         st.markdown("---")
         if st.button("✨ Create New Account", use_container_width=True, key="signup_btn"):
@@ -177,7 +177,7 @@ else:
                         st.success("✅ Got it!")
                         st.markdown("### Answer:")
                         st.markdown(response.text)
-                                            st.rerun()
+                               
                     except Exception as e:
                         st.error(f"❌ Error: {str(e)[:100]}")
     
@@ -205,7 +205,7 @@ else:
                         })
                         st.success("✅ Solution:")
                         st.markdown(response.text)
-                                            st.rerun()
+                               
                     except Exception as e:
                         st.error(f"❌ Error: {str(e)[:100]}")
     
@@ -235,7 +235,7 @@ else:
                         })
                         st.success("✅ Questions:")
                         st.markdown(response.text)
-                                            st.rerun()
+                               
                     except Exception as e:
                         st.error(f"❌ Error: {str(e)[:100]}")
     
