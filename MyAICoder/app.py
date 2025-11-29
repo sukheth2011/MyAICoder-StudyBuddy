@@ -1,9 +1,19 @@
 #!/usr/bin/env python
-"""
-MyAICoder - An AI-powered coding assistant for high school students
-"""
+import streamlit as st
+import google.generativeai as genai
+import os
 
-import gradio as gr
+# Configure Gemini API
+try:
+    api_key = st.secrets["GEMINI_API_KEY"]
+except:
+    api_key = os.getenv("GEMINI_API_KEY")
+
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel('gemini-2.5-flash')
+
+# Page configuration
+st.set_page_config(page_title="MyAICoder - Code Analysis", layout="wide", page_icon="📝")
 
 def analyze_code(code_snippet):
     """Analyze code and provide suggestions"""
@@ -15,7 +25,6 @@ def analyze_code(code_snippet):
     
     response = f"""
 **Code Analysis Results:**
-
 📊 **Metrics:**
 - Total Characters: {char_count}
 - Total Lines: {len(lines)}
@@ -28,80 +37,126 @@ def analyze_code(code_snippet):
 4. Test with different inputs
 5. Keep functions focused and small
 
-🔍 **Your Code:**
-```
-{code_snippet[:200]}{' ...' if len(code_snippet) > 200 else ''}
+🔍 **Your Code Sample:**
+```python
+{code_snippet[:200]}{'...' if len(code_snippet) > 200 else ''}
 ```
 
 Keep coding and learning! 🚀
-"""
+    """
     return response
 
-def explain_concept(concept):
-    """Explain a programming concept"""
-    concepts = {
-        "variables": "**Variables** store data values. In Python: `x = 5` creates a variable x with value 5.",
-        "loops": "**Loops** repeat code. `for i in range(5):` loops 5 times. `while x > 0:` loops while condition is true.",
-        "functions": "**Functions** reuse code. Defined with `def my_func():` and called with `my_func()`.",
-        "lists": "**Lists** store multiple items: `my_list = [1, 2, 3]`. Access with `my_list[0]`.",
-        "dictionaries": "**Dictionaries** store key-value pairs: `my_dict = {'name': 'Ali', 'age': 15}`.",
-        "conditionals": "**If-else** makes decisions: `if x > 5:` do something, `else:` do something else.",
-        "strings": "**Strings** are text: `my_text = 'Hello'`. Use + to join: `'Hello' + ' World'`.",
-    }
+# Main UI
+st.title("📝 MyAICoder - AI Code Assistant")
+st.markdown("### Learn Python Programming with AI Assistance")
+
+# Tabs
+tab1, tab2, tab3, tab4 = st.tabs(["Code Analyzer", "Concept Learning", "Quick Tips", "About"])
+
+with tab1:
+    st.markdown("## 📝 Code Analysis")
+    st.write("Paste your Python code and get AI-powered feedback!")
     
-    if concept.lower() in concepts:
-        return concepts[concept.lower()]
-    else:
-        available = ", ".join(list(concepts.keys())[:5])
-        return f"Concept not found. Try: {available}, and more!"
-
-# Create simple Gradio interface
-with gr.Blocks(title="MyAICoder", theme=gr.themes.Soft()) as demo:
-    gr.Markdown("# 🚀 MyAICoder - Learn Programming\n\nYour personal AI coding assistant for high school students!")
+    code_input = st.text_area("Enter your code:", height=200, placeholder="# Paste your Python code here...")
     
-    with gr.Tabs():
-        with gr.Tab("Code Analyzer"):
-            with gr.Row():
-                code_input = gr.Textbox(
-                    label="Paste your Python code here",
-                    placeholder="Write your code...",
-                    lines=8
-                )
-                analyze_btn = gr.Button("Analyze Code", variant="primary")
-                code_output = gr.Markdown()
-                analyze_btn.click(analyze_code, inputs=code_input, outputs=code_output)
-        
-        with gr.Tab("Learn Concepts"):
-            with gr.Row():
-                concept_select = gr.Textbox(
-                    label="Enter a concept to learn",
-                    placeholder="e.g., variables, loops, functions, lists...",
-                    value="variables"
-                )
-                explain_btn = gr.Button("Get Explanation", variant="primary")
-                concept_output = gr.Markdown()
-                explain_btn.click(explain_concept, inputs=concept_select, outputs=concept_output)
-        
-        with gr.Tab("About"):
-            gr.Markdown("""
-## About MyAICoder
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🔍 Analyze Code", use_container_width=True):
+            if code_input:
+                analysis = analyze_code(code_input)
+                st.success("Analysis Complete!")
+                st.markdown(analysis)
+            else:
+                st.warning("Please enter some code to analyze.")
+    
+    with col2:
+        if st.button("🤖 Get AI Feedback", use_container_width=True):
+            if code_input:
+                try:
+                    prompt = f"As a Python mentor, provide constructive feedback for this code:\n\n{code_input}"
+                    ai_response = model.generate_content(prompt)
+                    st.info("AI Feedback:")
+                    st.write(ai_response.text)
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
+            else:
+                st.warning("Please enter code first.")
 
-MyAICoder is designed for 9th-12th grade students learning Python programming.
+with tab2:
+    st.markdown("## 📚 Concept Learning")
+    
+    st.markdown("""
+    ### Python Basics
+    - **Variables**: Containers for storing data
+    - **Data Types**: int, float, str, bool, list, dict
+    - **Functions**: Reusable blocks of code
+    - **Loops**: Repeat code multiple times
+    - **Conditionals**: Make decisions in code
+    
+    ### Best Practices
+    - Write clean, readable code
+    - Use proper variable naming
+    - Add comments and documentation
+    - Test your code thoroughly
+    - Follow PEP 8 style guide
+    """)
+    
+    st.markdown("### 🤔 Ask About a Concept")
+    concept_question = st.text_input("What concept would you like to learn about?")
+    
+    if st.button("📚 Learn More", use_container_width=True):
+        if concept_question:
+            try:
+                prompt = f"Explain this Python concept for a high school student: {concept_question}"
+                explanation = model.generate_content(prompt)
+                st.success("Explanation:")
+                st.write(explanation.text)
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+        else:
+            st.warning("Please enter a concept to learn about.")
 
-### Features:
-- 📋 **Code Analysis** - Get feedback on your Python code
-- 💡 **Concept Learning** - Understand key programming concepts
-- 🔐 **Private & Safe** - Your data stays with you
-- ⚡ **Fast Feedback** - Instant analysis and explanations
+with tab3:
+    st.markdown("## 🎉 Quick Tips & Tricks")
+    
+    st.markdown("""
+    ### Python Tips
+    - **List Comprehension**: `[x for x in range(10)]`
+    - **Dictionary Get**: `dict.get('key', default)`
+    - **F-Strings**: `f"Hello {name}"`
+    - **Lambda Functions**: `lambda x: x * 2`
+    - **Enumerate**: `for i, item in enumerate(list)`
+    
+    ### Code Quality
+    - 📝 Write meaningful comments
+    - 📚 Follow PEP 8 style guide
+    - 🤖 Use descriptive variable names
+    - 🧠 Keep functions small and focused
+    - ✅ Test your code regularly
+    """)
 
-### How to Use:
-1. Go to \"Code Analyzer\" tab
-2. Paste your Python code
-3. Click \"Analyze Code\" to get feedback
-4. Go to \"Learn Concepts\" to understand new ideas
+with tab4:
+    st.markdown("## 📄 About MyAICoder")
+    st.markdown("""
+    ### Welcome to MyAICoder!
+    
+    MyAICoder is designed for 9th-12th grade students learning Python programming.
+    
+    #### Features:
+    - 📝 **Code Analyzer** - Get feedback on your Python code
+    - 📚 **Concept Learning** - Understand programming concepts
+    - 🎉 **Quick Tips** - Learn best practices and tricks
+    - 🤖 **AI-Powered** - Get help from Gemini AI
+    
+    #### How to Use:
+    1. Go to "Code Analyzer" tab
+    2. Paste your Python code
+    3. Click "Analyze Code" to get metrics
+    4. Click "Get AI Feedback" for suggestions
+    5. Use "Concept Learning" to understand new topics
+    
+    **Keep coding and learning!** 🚀
+    """)
 
-Happy coding! 🎉
-""")
-
-if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, share=False)
+st.markdown("---")
+st.markdown("**Made with ❤️ for student coders** | Powered by Gemini AI")
