@@ -177,6 +177,7 @@ else:
                         st.success("✅ Got it!")
                         st.markdown("### Answer:")
                         st.markdown(response.text)
+                                            st.rerun()
                     except Exception as e:
                         st.error(f"❌ Error: {str(e)[:100]}")
     
@@ -204,6 +205,7 @@ else:
                         })
                         st.success("✅ Solution:")
                         st.markdown(response.text)
+                                            st.rerun()
                     except Exception as e:
                         st.error(f"❌ Error: {str(e)[:100]}")
     
@@ -233,6 +235,7 @@ else:
                         })
                         st.success("✅ Questions:")
                         st.markdown(response.text)
+                                            st.rerun()
                     except Exception as e:
                         st.error(f"❌ Error: {str(e)[:100]}")
     
